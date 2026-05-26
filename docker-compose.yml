@@ -1,30 +1,45 @@
-version: '3.8'
+name: student-fitnesstracker
 
 services:
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: fitnesstracker_web
-    ports:
-      - "8081:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      # Conexiunea catre containerul de SQL Server
-      - ConnectionStrings__DefaultConnection=Server=db;Database=FitnessTrackerDB;User=sa;Password=ParolaSuperSigura123!;TrustServerCertificate=True
-    depends_on:
-      - db
-
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: fitnesstracker_db
+    container_name: student-fitnesstracker-db
     environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=ParolaSuperSigura123!
-    ports:
-      - "1433:1433"
+      ACCEPT_EULA: Y
+      SA_PASSWORD: fitnesstracker-demo-pass-2026
+      MSSQL_DB: fitnesstracker
     volumes:
-      - sql_data:/var/opt/mssql
+      - db_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"fitnesstracker-demo-pass-2026\" -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - studlab_net
+    restart: unless-stopped
+
+  api:
+    build:
+      context: . 
+    container_name: student-fitnesstracker-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # ATENTIE: Serverul a devenit numele containerului de db, nu mai e localhost!
+      ConnectionStrings__DefaultConnection: "Server=student-fitnesstracker-db,1433;Database=fitnesstracker;User Id=sa;Password=fitnesstracker-demo-pass-2026;TrustServerCertificate=True"
+      ASPNETCORE_ENVIRONMENT: Production
+    expose:
+      - "8080" # NGINX-ul cursului va face rutarea, noi doar deschidem portul!
+    networks:
+      - studlab_net
+    restart: unless-stopped
 
 volumes:
-  sql_data:
+  db_data:
+
+networks:
+  studlab_net:
+    external: true
+    name: studlab_net

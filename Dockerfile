@@ -1,24 +1,31 @@
-# Folosim imaginea oficiala de .NET 8 SDK pentru a compila proiectul
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# 1. Stage-ul de build (folosim SDK-ul complet pentru compilare)
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 
-# Copiem fisierul de proiect si restauram dependintele
+# Copiem fisierul de proiect si dam restore
 COPY ["FitnessTrackerPAW.csproj", "./"]
 RUN dotnet restore "FitnessTrackerPAW.csproj"
 
-# Copiem restul codului si compilam aplicatia
+# Copiem restul codului si compilam (publish)
 COPY . .
 WORKDIR "/src/"
-RUN dotnet build "FitnessTrackerPAW.csproj" -c Release -o /app/build
-RUN dotnet publish "FitnessTrackerPAW.csproj" -c Release -o /app/publish
+RUN dotnet publish "FitnessTrackerPAW.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Construim imaginea finala ultra-usoara de ASP.NET
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+# 2. Stage-ul de runtime (mai usor, doar pentru rulare)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
+WORKDIR /app
+
+# --- FIX OBLIGATORIU PENTRU SQL SERVER PE ALPINE (Conform PDF) ---
+RUN apk add --no-cache icu-data-full icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+# ----------------------------------------------------------------
+
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# 3. Asamblarea finala
+FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-
-# Setam portul default 8080 pentru .NET 8
-EXPOSE 8080
-ENV ASPNETCORE_HTTP_PORTS=8080
-
 ENTRYPOINT ["dotnet", "FitnessTrackerPAW.dll"]
