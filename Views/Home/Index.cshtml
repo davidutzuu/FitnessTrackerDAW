@@ -1,0 +1,18 @@
+﻿<div class="jumbotron bg-light p-5 rounded mt-3 text-center">
+    <h1 class="display-4 fw-bold text-primary">Fitness & Nutrition Tracker</h1>
+    <p class="lead">Monitorizează surplusul caloric, consumul de mass gainers și nivelul de pump obținut la antrenamente.</p>
+    <hr class="my-4">
+
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <div class="d-flex justify-content-center gap-3">
+            <a class="btn btn-primary btn-lg" asp-action="LogWorkout" role="button">Loghează Antrenament</a>
+            <a class="btn btn-info btn-lg text-white" asp-action="Analytics" role="button">Vezi Analiză SPA</a>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">Pentru a începe urmărirea progresului tău academic și fizic, te rugăm să te autentifici.</p>
+        <a class="btn btn-success btn-lg" asp-controller="Account" asp-action="Login" role="button">Autentifică-te acum</a>
+    }
+</div>

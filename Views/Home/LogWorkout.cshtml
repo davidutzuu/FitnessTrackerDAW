@@ -1,0 +1,29 @@
+﻿@model WorkoutSessionDto
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow p-4 mt-4">
+            <h3 class="text-center mb-4">Înregistrează o Sesiune de Antrenament</h3>
+            <form asp-action="LogWorkout" method="post">
+
+                <div class="form-group mb-3">
+                    <label class="form-label fw-bold">Durată Antrenament (minute)</label>
+                    <input type="number" name="DurationInMinutes" class="form-control" data-val="true" data-val-required="Durata este obligatorie." data-val-range="Introdu o durată validă între 1 și 180 minute." data-val-range-min="1" data-val-range-max="180" />
+                    <span class="text-danger" data-valmsg-for="DurationInMinutes" data-valmsg-replace="true"></span>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label fw-bold">Nivel de Pump (Senzație de pompare musculară 1-10)</label>
+                    <input type="number" name="PumpLevel" class="form-control" data-val="true" data-val-required="Nivelul de pump este obligatoriu." data-val-range="Nivelul de pump trebuie să fie între 1 (minim) și 10 (maxim)." data-val-range-min="1" data-val-range-max="10" />
+                    <span class="text-danger" data-valmsg-for="PumpLevel" data-valmsg-replace="true"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2">Salvează Sesiunea</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
