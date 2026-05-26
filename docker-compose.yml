@@ -29,6 +29,7 @@ services:
     environment:
       ConnectionStrings__DefaultConnection: "Server=student-fitnesstracker-db,1433;Database=fitnesstracker;User Id=sa;Password=fitnesstracker-demo-pass-2026;TrustServerCertificate=True"
       ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://0.0.0.0:8080"
     expose:
       - "8080"
     networks:
