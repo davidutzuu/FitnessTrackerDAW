@@ -10,11 +10,11 @@ services:
       MSSQL_DB: fitnesstracker
     volumes:
       - db_data:/var/opt/mssql
-    healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"fitnesstracker-demo-pass-2026\" -Q \"SELECT 1\" || exit 1"]
+  healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"fitnesstracker-demo-pass-2026\" -C -Q \"SELECT 1\" || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 15
     networks:
       - studlab_net
     restart: unless-stopped
