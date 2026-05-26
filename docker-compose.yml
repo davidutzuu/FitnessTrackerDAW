@@ -3,7 +3,7 @@ name: student-fitnesstracker
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: student-fitnesstracker-db
+    container_name: student-dnedelcu-db
     environment:
       ACCEPT_EULA: Y
       SA_PASSWORD: fitnesstracker-demo-pass-2026
@@ -22,16 +22,15 @@ services:
   api:
     build:
       context: . 
-    container_name: student-fitnesstracker-api
+    container_name: student-dnedelcu-api
     depends_on:
       db:
         condition: service_healthy
     environment:
-      # ATENTIE: Serverul a devenit numele containerului de db, nu mai e localhost!
-      ConnectionStrings__DefaultConnection: "Server=student-fitnesstracker-db,1433;Database=fitnesstracker;User Id=sa;Password=fitnesstracker-demo-pass-2026;TrustServerCertificate=True"
-      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Server=student-dnedelcu-db,1433;Database=fitnesstracker;User Id=sa;Password=fitnesstracker-demo-pass-2026;TrustServerCertificate=True"
+      ASPNETCORE_ENVIRONMENT: Development
     expose:
-      - "8080" # NGINX-ul cursului va face rutarea, noi doar deschidem portul!
+      - "8080"
     networks:
       - studlab_net
     restart: unless-stopped
