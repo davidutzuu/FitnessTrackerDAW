@@ -42,5 +42,18 @@ namespace FitnessTrackerPAW.Controllers
             // Returnam 201 Created cand o resursa noua a fost facuta cu succes
             return StatusCode(201, new { Message = "Supliment adaugat cu succes!" });
         }
+
+        [HttpDelete("reset")]
+        // ↑ DELETE /api/supplement/reset
+        // Sterge TOTI suplimentele utilizatorului logat
+        public async Task<IActionResult> ResetSupplements()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Forbid(); // 403 Forbidden
+
+            await _service.ResetAllSupplementsAsync(userId);
+
+            return Ok(new { Message = "Toate suplimentele au fost sterse! Calorii si proteine reserate la 0." });
+        }
     }
 }

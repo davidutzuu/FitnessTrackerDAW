@@ -56,8 +56,11 @@
             </div>
 
             <div class="card shadow-sm">
-                <div class="card-header bg-secondary text-white fw-bold">
-                    <i class="fas fa-list me-2"></i>Alimentele consumate astăzi
+                <div class="card-header bg-secondary text-white fw-bold d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-list me-2"></i>Alimentele consumate astăzi</span>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="resetSupplements()" title="Sterge ALL supplements si reseteaza calorii/proteine la 0">
+                        <i class="fas fa-trash-alt me-1"></i>RESET
+                    </button>
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-hover table-striped mb-0">
@@ -104,3 +107,60 @@
         </div>
     </div>
 </div>
+
+<script>
+    // ↑ JAVASCRIPT: Functia pentru RESET
+    async function resetSupplements() {
+        // ↑ Functia care sterge toti suplimentele
+
+        // Confirm dialog
+        if (!confirm("Esti sigur ca vrei sa stergi TOTI suplimentele si sa resetezi calorii/proteine la 0?")) {
+            // ↑ Afiseaza dialog de confirm
+            // Daca utilizatorul apasa CANCEL → return (nu se executa nothing)
+            return;
+        }
+
+        try {
+            // Apeleaza API endpoint: DELETE /api/supplement/reset
+            const response = await fetch('/api/supplement/reset', {
+                method: 'DELETE',
+                // ↑ HTTP METHOD = DELETE
+
+                headers: {
+                    'Content-Type': 'application/json'
+                    // ↑ Header: JSON response
+                }
+            });
+
+            // Verifica daca request-ul e ok (200-299)
+            if (response.ok) {
+                // ↑ Daca STATUS = 200, 201, 204, etc.
+
+                // Afiseaza success message
+                alert('✓ Toti suplimentele au fost sterse! Calorii si proteine reserate la 0.');
+                // ↑ Alert cu mesaj de succes
+
+                // Reincarca pagina (refresh)
+                location.reload();
+                // ↑ Reincarca View - tabelul va fi gol, totale vor fi 0
+            } else {
+                // ↑ Daca STATUS = 400, 403, 404, 500, etc.
+
+                const errorData = await response.json();
+                // ↑ Preia JSON response din server
+
+                alert('❌ Eroare: ' + (errorData.message || 'Nu s-a putut reseta suplimentele.'));
+                // ↑ Afiseaza eroare
+            }
+        } catch (error) {
+            // ↑ Catch errors (network, JSON parse, etc.)
+
+            console.error('Eroare:', error);
+            // ↑ Logheza eroare in console
+
+            alert('❌ Eroare de retea: ' + error.message);
+            // ↑ Afiseaza eroare utilizatorului
+        }
+    }
+    // ↑ Inchide functia resetSupplements
+</script>

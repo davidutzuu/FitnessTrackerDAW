@@ -6,5 +6,7 @@ namespace FitnessTrackerPAW.Application.Interfaces
     {
         Task<IEnumerable<SupplementDto>> GetAllSupplementsAsync();
         Task AddSupplementAsync(SupplementDto supplementDto, string userId);
+        Task ResetAllSupplementsAsync(string userId);
+        // ↑ NOUA METODA: Sterge TOTI suplimentele utilizatorului
     }
 }
