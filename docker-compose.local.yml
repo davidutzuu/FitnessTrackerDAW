@@ -1,0 +1,20 @@
+services:
+  db:
+    environment:
+      SA_PASSWORD: "fitnesstracker-local-pass"
+      MSSQL_DB: "fitnesstracker"
+    ports:
+      - "1433:1433"
+
+  api:
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=student-dnedelcu-db,1433;Database=fitnesstracker;User Id=sa;Password=fitnesstracker-local-pass;TrustServerCertificate=True;"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://+:8080"
+    ports:
+      - "8080:8080"
+    expose: !reset []
+
+networks:
+  studlab_net:
+    name: studlab_net
