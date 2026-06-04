@@ -42,6 +42,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 // 4. Dependency Injection (Layer-ul de Servicii si Repository)
 builder.Services.AddScoped<ISupplementRepository, SupplementRepository>();
 builder.Services.AddScoped<ISupplementService, SupplementService>();
+builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
+builder.Services.AddScoped<IExerciseService, ExerciseService>();
 
 // 5. Activare suport pentru API si interfata Hibrid (MVC + Razor)
 builder.Services.AddControllersWithViews();

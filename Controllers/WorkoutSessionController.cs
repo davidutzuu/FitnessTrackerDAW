@@ -36,7 +36,7 @@ namespace FitnessTrackerPAW.Controllers
             _context.WorkoutSessions.Add(session);
             await _context.SaveChangesAsync();
 
-            return StatusCode(201, new { Message = "Antrenament salvat cu succes!" });
+            return StatusCode(201, new { id = session.Id, message = "Antrenament salvat cu succes!" });
         }
     }
 }

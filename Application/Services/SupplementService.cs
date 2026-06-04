@@ -34,19 +34,26 @@ namespace FitnessTrackerPAW.Application.Services
         public async Task AddSupplementAsync(SupplementDto dto, string userId)
         {
             _logger.LogInformation($"Adaugare supliment nou: {dto.Name} pentru user-ul {userId}");
-
-            var supplement = new Supplement
+            try
             {
-                Name = dto.Name,
-                CaloriesPerServing = dto.CaloriesPerServing,
-                ProteinPerServing = dto.ProteinPerServing,
-                IsMassGainer = dto.IsMassGainer,
-                DateConsumed = DateTime.UtcNow,
-                UserId = userId
-            };
+                var supplement = new Supplement
+                {
+                    Name = dto.Name,
+                    CaloriesPerServing = dto.CaloriesPerServing,
+                    ProteinPerServing = dto.ProteinPerServing,
+                    IsMassGainer = dto.IsMassGainer,
+                    DateConsumed = DateTime.UtcNow,
+                    UserId = userId
+                };
 
-            await _repository.AddAsync(supplement);
-            await _repository.SaveChangesAsync();
+                await _repository.AddAsync(supplement);
+                await _repository.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Eroare la adaugarea suplimentului {dto.Name} pentru user-ul {userId}.");
+                throw;
+            }
         }
 
         public async Task ResetAllSupplementsAsync(string userId)
@@ -55,6 +62,12 @@ namespace FitnessTrackerPAW.Application.Services
 
             var allSupplements = await _repository.GetAllAsync();
             var userSupplements = allSupplements.Where(s => s.UserId == userId).ToList();
+
+            if (userSupplements.Count == 0)
+            {
+                _logger.LogWarning($"Nu exista suplimente de sters pentru user-ul {userId}.");
+                return;
+            }
 
             foreach (var supplement in userSupplements)
             {

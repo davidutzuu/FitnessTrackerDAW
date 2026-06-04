@@ -1,9 +1,7 @@
-﻿using FitnessTrackerPAW.Application.DTOs;
-using FitnessTrackerPAW.Domain;
-using FitnessTrackerPAW.Infrastructure;
+using FitnessTrackerPAW.Application.DTOs;
+using FitnessTrackerPAW.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace FitnessTrackerPAW.Controllers
 {
@@ -12,68 +10,52 @@ namespace FitnessTrackerPAW.Controllers
     [Authorize(Roles = "Admin")]
     public class ExerciseController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IExerciseService _service;
 
-        public ExerciseController(ApplicationDbContext context)
+        public ExerciseController(IExerciseService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
-            var exercises = await _context.Exercises.ToListAsync();
-            return Ok(exercises);
+            var dtos = await _service.GetAllAsync();
+            return Ok(dtos);
         }
 
         [HttpGet("{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {
-            var exercise = await _context.Exercises.FindAsync(id);
-            if (exercise == null) return NotFound();
-
-            return Ok(exercise);
+            var dto = await _service.GetByIdAsync(id);
+            if (dto == null) return NotFound();
+            return Ok(dto);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ExerciseDto dto)
         {
-            var exercise = new Exercise
-            {
-                Name = dto.Name,
-                TargetMuscle = dto.TargetMuscle
-            };
-
-            _context.Exercises.Add(exercise);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetById), new { id = exercise.Id }, exercise);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var created = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] ExerciseDto dto)
         {
-            var exercise = await _context.Exercises.FindAsync(id);
-            if (exercise == null) return NotFound();
-
-            exercise.Name = dto.Name;
-            exercise.TargetMuscle = dto.TargetMuscle;
-            await _context.SaveChangesAsync();
-
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var updated = await _service.UpdateAsync(id, dto);
+            if (!updated) return NotFound();
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var exercise = await _context.Exercises.FindAsync(id);
-            if (exercise == null) return NotFound();
-
-            _context.Exercises.Remove(exercise);
-            await _context.SaveChangesAsync();
-
+            var deleted = await _service.DeleteAsync(id);
+            if (!deleted) return NotFound();
             return NoContent();
         }
     }

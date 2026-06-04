@@ -1,4 +1,4 @@
-﻿<div class="card shadow p-4 mt-4">
+<div class="card shadow p-4 mt-4">
     <h2 class="text-center text-primary mb-4">Catalogul de Exerciții (Componentă SPA Modernă)</h2>
     <div id="react-root"></div>
 </div>
@@ -12,16 +12,25 @@
         const [exercises, setExercises] = React.useState([]);
         const [loading, setLoading] = React.useState(true);
         const [error, setError] = React.useState(null);
+        const [search, setSearch] = React.useState('');
 
         React.useEffect(() => {
-            // Consumam API-ul nativ REST creat anterior
-            fetch('/api/Exercise')
+            // credentials: 'include' trimite cookie-ul de sesiune pentru endpoint-urile securizate
+            fetch('/api/Exercise', { credentials: 'include' })
                 .then(response => {
-                    if (!response.ok) throw new Error('Eroare la preluarea datelor de la API.');
+                    if (response.status === 401) {
+                        window.location.href = '/Account/Login';
+                        return;
+                    }
+                    if (!response.ok) {
+                        throw new Error(`Eroare server: ${response.status} ${response.statusText}`);
+                    }
                     return response.json();
                 })
                 .then(data => {
-                    setExercises(data);
+                    if (data) {
+                        setExercises(data);
+                    }
                     setLoading(false);
                 })
                 .catch(err => {
@@ -30,15 +39,44 @@
                 });
         }, []);
 
-        if (loading) return <div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Se încarcă datele din API...</p></div>;
-        if (error) return <div class="alert alert-danger" role="alert">A apărut o eroare: {error}</div>;
+        const filtered = exercises.filter(ex =>
+            ex.name.toLowerCase().includes(search.toLowerCase()) ||
+            ex.targetMuscle.toLowerCase().includes(search.toLowerCase())
+        );
+
+        if (loading) return (
+            <div className="text-center p-4">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Se încarcă...</span>
+                </div>
+                <p className="mt-2 text-muted">Se încarcă datele din API...</p>
+            </div>
+        );
+
+        if (error) return (
+            <div className="alert alert-danger" role="alert">
+                <strong>Eroare:</strong> {error}
+            </div>
+        );
 
         return (
             <div>
-                <p class="text-muted mb-3">Această secțiune este randată dinamic pe client utilizând un framework SPA și consumă endpoint-ul securizat.</p>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle">
-                        <thead class="table-dark">
+                <p className="text-muted mb-3">
+                    Această secțiune este randată dinamic pe client utilizând React 18 (CDN)
+                    și consumă endpoint-ul <code>/api/exercise</code>.
+                </p>
+                <div className="mb-3">
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Caută după nume sau grupă musculară..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                    />
+                </div>
+                <div className="table-responsive">
+                    <table className="table table-striped table-hover align-middle">
+                        <thead className="table-dark">
                             <tr>
                                 <th>#ID</th>
                                 <th>Denumire Exercițiu</th>
@@ -46,20 +84,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {exercises.length === 0 ? (
-                                <tr><td colSpan="3" class="text-center text-muted">Nu există exerciții globale adăugate de administrator.</td></tr>
+                            {filtered.length === 0 ? (
+                                <tr>
+                                    <td colSpan="3" className="text-center text-muted">
+                                        {exercises.length === 0
+                                            ? 'Nu există exerciții globale adăugate de administrator.'
+                                            : 'Niciun exercițiu nu corespunde căutării.'}
+                                    </td>
+                                </tr>
                             ) : (
-                                exercises.map(ex => (
+                                filtered.map(ex => (
                                     <tr key={ex.id}>
                                         <td><strong>{ex.id}</strong></td>
                                         <td>{ex.name}</td>
-                                        <td><span class="badge bg-success">{ex.targetMuscle}</span></td>
+                                        <td><span className="badge bg-success">{ex.targetMuscle}</span></td>
                                     </tr>
                                 ))
                             )}
                         </tbody>
                     </table>
                 </div>
+                <p className="text-end text-muted small">
+                    {filtered.length} din {exercises.length} exerciții afișate
+                </p>
             </div>
         );
     }

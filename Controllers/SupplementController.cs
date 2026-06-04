@@ -53,7 +53,7 @@ namespace FitnessTrackerPAW.Controllers
 
             await _service.ResetAllSupplementsAsync(userId);
 
-            return Ok(new { Message = "Toate suplimentele au fost sterse! Calorii si proteine reserate la 0." });
+            return NoContent(); // 204 No Content
         }
     }
 }
