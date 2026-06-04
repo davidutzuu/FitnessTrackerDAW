@@ -1,17 +1,18 @@
-name: student-fitnesstracker
+name: student-${USER:-dnedelcu}
 
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: student-dnedelcu-db
+    container_name: student-${USER:-dnedelcu}-db
     environment:
       ACCEPT_EULA: "Y"
-      SA_PASSWORD: "fitnesstracker-demo-pass-2026"
-      MSSQL_DB: "fitnesstracker"
+      SA_PASSWORD: ${DB_PASSWORD:-dnedelcu-demo-pass-2026}
+      MSSQL_DB: ${DB_NAME:-fitnesstracker}
+      MSSQL_MEMORY_LIMIT_MB: "512"
     volumes:
       - db_data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"fitnesstracker-demo-pass-2026\" -C -Q \"SELECT 1\" || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"${DB_PASSWORD:-dnedelcu-demo-pass-2026}\" -C -Q \"SELECT 1\" || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 15
@@ -21,17 +22,17 @@ services:
 
   api:
     build:
-      context: . 
-    container_name: student-dnedelcu-api
+      context: .
+    container_name: student-${USER:-dnedelcu}-api
     depends_on:
       db:
         condition: service_healthy
     environment:
-      ConnectionStrings__DefaultConnection: "Server=student-dnedelcu-db,1433;Database=fitnesstracker;User Id=sa;Password=fitnesstracker-demo-pass-2026;TrustServerCertificate=True"
-      ASPNETCORE_ENVIRONMENT: "Development"
-      ASPNETCORE_URLS: "http://0.0.0.0:8085"
-    ports:
-      - "8085:8085"
+      ConnectionStrings__DefaultConnection: "Server=student-${USER:-dnedelcu}-db,1433;Database=${DB_NAME:-fitnesstracker};User Id=sa;Password=${DB_PASSWORD:-dnedelcu-demo-pass-2026};TrustServerCertificate=True;"
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: "http://+:8080"
+    expose:
+      - "8080"
     networks:
       - studlab_net
     restart: unless-stopped
@@ -41,4 +42,5 @@ volumes:
 
 networks:
   studlab_net:
-    driver: bridge
+    external: true
+    name: studlab_net
