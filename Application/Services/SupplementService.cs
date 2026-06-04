@@ -52,22 +52,16 @@ namespace FitnessTrackerPAW.Application.Services
         public async Task ResetAllSupplementsAsync(string userId)
         {
             _logger.LogInformation($"Reset toate suplimentele pentru user-ul {userId}");
-            // ↑ Logheza operatia de reset
 
             var allSupplements = await _repository.GetAllAsync();
-            // ↑ Aduceti TOTI suplimentele din DB
-
             var userSupplements = allSupplements.Where(s => s.UserId == userId).ToList();
-            // ↑ Filtreaza - numai suplimentele utilizatorului curent
 
             foreach (var supplement in userSupplements)
             {
                 _repository.DeleteAsync(supplement.Id);
-                // ↑ Sterge fiecare supliment al utilizatorului
             }
 
             await _repository.SaveChangesAsync();
-            // ↑ Salveaza changurile in DB (DELETE queries)
         }
     }
 }
